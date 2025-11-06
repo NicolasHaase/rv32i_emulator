@@ -125,7 +125,7 @@ AUIPC - só tem imm, rd e opcode
 /**
 INSTRUCTIONS - TIPO J
 
-JAU - tem 4 imm diferentes, rd e opcode
+JAL - tem 4 imm diferentes, rd e opcode
 */
 
 
