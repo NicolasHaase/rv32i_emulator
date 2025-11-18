@@ -1,5 +1,8 @@
 #include <iostream>
 #include <bitset>
+#include <array>
+#include <memory>
+#include <vector>
 
 using namespace std;
 
@@ -310,13 +313,98 @@ public:
     }
 };
 
+class CPU {
+private:
+    array<int, 32> registers; ///p caso a gnt precise usar depois sla, já deixa criado
+    unique_ptr<int> PC; ///contador de programa vai ser ponteiro
+    ///to usando smart pointer ao invés de raw pointer pq é melhor, só aceita
+    Instruction_Register IR;
+    ///vai ser a memoria que contém as instruções
+    vector<int> memoria;
+
+public:
+    ///vai inicializar o PC com 0 já
+    CPU() : PC(make_unique<int>(0)){
+        ///esse for inicializa todos os registradores com 0, só p n dar erro caso a gnt use
+        for (int &r : registers) {
+            r = 0;
+        }
+    }
+
+    ///vai carregar o programa p memoria
+    void loadProgram(const vector<int>& program) {
+        memoria = program;
+        *PC = 0;
+    }
+
+    int fetch() {
+        if (*PC < 0 || *PC >= memoria.size()) {
+            cout << "PC fora da memoria, encerrando execucao\n";
+            return -1;
+        }
+
+        int instr = memoria[*PC];
+        cout << "\n[FETCH] PC = " << *PC << " - Instrucao: " << bitset<32>(instr) << "\n\n";
+        return instr;
+    }
+
+    void decode(int instr) {
+        cout << "[DECODE]\n";
+        IR.decoder(instr);
+    }
+
+    void execute_instruction(int instr) {
+        cout << "\n[EXECUTE]\n";
+        ///usamos no futuro p chamar: add, sub, lw, sw, beq, jal...
+    }
+
+    void write_back(int instr) {
+        cout << "\n[WRITEBACK]\n";
+        ///usamos no futuro p atualizar os registradores
+    }
+
+    void advancePC() {
+        (*PC)++;
+    }
+
+    bool step() {
+        int instr = fetch();
+        if (instr == -1) return false;  // erro / fim
+
+        decode(instr);
+        execute_instruction(instr);
+        write_back(instr);
+        advancePC();
+
+        return true;
+    }
+
+    // Executa o programa inteiro
+    void run() {
+        cout << "\nINICIANDO EXECUCAO\n";
+        while (step()) { }   // roda até acabar memória
+        cout << "\nEXECUCAO FINALIZADA\n";
+    }
+};
+
 int main() {
 
     int n1 = 0b00000000000100000000000001110011, n2 = 0b00000000000011100010011010110011;
-
+    /*
     Instruction_Register ir;
 
     ir.decoder(n1);
+    */
+
+    CPU cpu;
+
+    vector<int> program = {
+        n1,
+        n2
+    };
+
+    cpu.loadProgram(program);
+    cpu.run();
 
     return 0;
 }
